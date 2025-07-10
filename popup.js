@@ -22,12 +22,21 @@ function deleteMemo(index) {
   });
 }
 
+let currentSearch = '';
+
 // メモ一覧を表示
 function renderMemos() {
   chrome.storage.local.get({ memos: [] }, (result) => {
     const memoList = document.getElementById('memoList');
     memoList.innerHTML = '';
-    result.memos.forEach((memo, idx) => {
+    let memos = result.memos;
+    if (currentSearch) {
+      const searchLower = currentSearch.toLowerCase();
+      memos = memos.filter(memo =>
+        (memo.text && memo.text.toLowerCase().includes(searchLower))
+      );
+    }
+    memos.forEach((memo, idx) => {
       const li = document.createElement('li');
       li.textContent = memo.text + ' (' + memo.date + ')';
       const delBtn = document.createElement('button');
@@ -41,4 +50,12 @@ function renderMemos() {
 }
 
 document.getElementById('saveBtn').addEventListener('click', saveMemo);
-document.addEventListener('DOMContentLoaded', renderMemos); 
+document.addEventListener('DOMContentLoaded', renderMemos);
+
+const searchInput = document.getElementById('searchInput');
+if (searchInput) {
+  searchInput.addEventListener('input', (e) => {
+    currentSearch = e.target.value.trim();
+    renderMemos();
+  });
+} 
